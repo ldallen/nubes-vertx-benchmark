@@ -1,0 +1,44 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-3.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+<h1>Todo-List</h1>
+
+<table>
+    <tr>
+        <th>Task-Name</th>
+        <th>Task-Description</th>
+    </tr>
+
+    <tr th:each="task : ${context.session().get('req_data')}">
+        <td th:text="${task.key}">name</td>
+        <td th:text="${task.value}">description</td>
+    </tr>
+</table>
+
+<br/>
+<br/>
+
+<form action="dynamic/list.html" method="post">
+    <table>
+        <tr>
+            <th>Task Name</th>
+            <th><input type="text" name="taskname"/></th>
+        </tr>
+
+        <tr>
+            <th>Task Description</th>
+            <th><input type="text" name="taskdescription"/></th>
+        </tr>
+
+        <tr>
+            <th></th>
+            <th><input type="submit" value="Add Task"/></th>
+        </tr>
+
+    </table>
+</form>
+</body>
+</html>

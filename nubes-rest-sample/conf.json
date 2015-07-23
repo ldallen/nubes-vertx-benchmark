@@ -1,0 +1,16 @@
+{
+	"host":"localhost",
+	"port":8000,
+	"controller-packages":["fr.treeptik.controllers"],
+	"domain-packages":"fr.treeptik.domains",
+	"services":
+		{
+			"fr.treeptik.services.TodoService":
+				{
+					"url":"jdbc:mysql://localhost:3306/vertxTodo",
+					"driver_class":"com.mysql.jdbc.Driver",
+					"user":"root",
+					"password":"root"
+				}
+		}
+}
