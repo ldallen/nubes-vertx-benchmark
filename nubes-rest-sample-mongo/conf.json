@@ -7,12 +7,8 @@
 		{
 			"fr.treeptik.services.TodoService":
 				{
-					"url":"jdbc:mysql://localhost:3306/vertxBase",
-					"driver_class":"com.mysql.jdbc.Driver",
-					"user":"root",
-					"password":"root",
-				  	"initial_pool_size":500,
-					"max_pool_size":50000
+					"db_name":"vertxBase",
+					"connection_string":"mongodb://localhost:27017"
 				}
 		}
 }

@@ -1,6 +1,5 @@
 package fr.treeptik.controllers;
 
-import com.github.aesteve.vertx.nubes.annotations.File;
 import com.github.aesteve.vertx.nubes.annotations.params.Param;
 import com.github.aesteve.vertx.nubes.annotations.routing.http.DELETE;
 import com.github.aesteve.vertx.nubes.annotations.routing.http.GET;
@@ -32,8 +31,11 @@ public class TodoController {
 
 		todoService.getAll(handler->{
 			if (handler.succeeded()) {
-				result.set(handler.result());
+				result.set(new JsonArray(handler.result()));
 				context.next();
+			}
+			else {
+				context.response().end(handler.cause().getMessage());
 			}
 		});
 
@@ -44,7 +46,7 @@ public class TodoController {
 
 		todoService.getSpecific("id", Integer.toString(id), handler -> {
 			if (handler.succeeded()) {
-				result.set(handler.result());
+				result.set(new JsonArray(handler.result()));
 				context.next();
 			}
 			else {
@@ -58,7 +60,7 @@ public class TodoController {
 
 		todoService.getSpecific("done",done, handler -> {
 			if (handler.succeeded()) {
-				result.set(handler.result());
+				result.set(new JsonArray(handler.result()));
 				context.next();
 			}
 			else {
@@ -73,7 +75,7 @@ public class TodoController {
 
 		todoService.getSpecific("action", action, handler -> {
 			if (handler.succeeded()) {
-				result.set(handler.result());
+				result.set(new JsonArray(handler.result()));
 				context.next();
 			}
 			else {
@@ -98,13 +100,13 @@ public class TodoController {
 		});
 	}
 
-	@PUT("/todo/:id")
-	public void updateStatus(@Param("id") Integer id, @RequestBody JsonObject status, RoutingContext context, Payload<String> result) {
+	@PUT("/todo/:action")
+	public void updateStatus(@Param("action") String action, @RequestBody JsonObject status, RoutingContext context, Payload<String> result) {
 
 
-		todoService.updateStatus(id, status.getBoolean("done"), handler -> {
+		todoService.updateStatus(action, status.getBoolean("done"), handler -> {
 			if (handler.succeeded()) {
-				result.set(handler.result());
+				result.set("update succeeded!");
 				context.next();
 			} else {
 				context.response().end(handler.cause().getMessage());
@@ -112,11 +114,11 @@ public class TodoController {
 		});
 	}
 
-	@DELETE("/todo/:id")
-	public void deleteTodo(@Param("id") Integer id, RoutingContext context, Payload<String> result ){
-		todoService.delete(id, handler -> {
+	@DELETE("/todo/:action")
+	public void deleteTodo(@Param("action") String action, RoutingContext context, Payload<String> result ){
+		todoService.delete(action, handler -> {
 			if (handler.succeeded()){
-				result.set(handler.result());
+				result.set("delete succeeded!");
 				context.next();
 			}
 			else {

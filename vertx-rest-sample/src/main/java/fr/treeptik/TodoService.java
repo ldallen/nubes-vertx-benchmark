@@ -22,18 +22,18 @@ public class TodoService {
             if (r.succeeded()) {
 
                 SQLConnection sqlConnection = r.result();
-                String query = "Select * from todos";
+                String query = "Select * from todos limit 20";
 
                 sqlConnection.query(query, h -> {
                     if (h.succeeded()) {
 
                         JsonArray resList = new JsonArray(h.result().getRows());
                         result.handle(Future.succeededFuture(resList));
-                        sqlConnection.close();
                     }
                     else{
                         result.handle(Future.failedFuture(h.cause().getMessage()));
                     }
+                    sqlConnection.close();
                 });
             }
         });
@@ -67,15 +67,17 @@ public class TodoService {
                         result.handle(Future.failedFuture("couldn't find the attribute: "+ type));
                     }
                 }
+                query += " limit 20";
+
                 sqlConnection.queryWithParams(query, param, h -> {
                     if (h.succeeded()) {
                         JsonArray resList = new JsonArray(h.result().getRows());
                         result.handle(Future.succeededFuture(resList));
-                        sqlConnection.close();
                     }
                     else{
                         result.handle(Future.failedFuture(h.cause().getMessage()));
                     }
+                    sqlConnection.close();
                 });
             }
         });
@@ -95,11 +97,11 @@ public class TodoService {
                     else
                         result.handle(Future.failedFuture("couldn't delete task: " + id + "...Wrong id ?"));
 
-                    sqlConnection.close();
                 }
                 else{
                     result.handle(Future.failedFuture(h.cause().getMessage()));
                 }
+                sqlConnection.close();
             });
         });
 
@@ -120,11 +122,12 @@ public class TodoService {
                             result.handle(Future.succeededFuture("successfully changed status of task: " + id +"\nNew value is: " + newStatus));
                         else
                             result.handle(Future.failedFuture("couldn't update task: " + id + "...Wrong id ?"));
-                        sqlConnection.close();
+
                     }
                     else{
                         result.handle(Future.failedFuture(h.cause().getMessage()));
                     }
+                    sqlConnection.close();
                 });
             }
         });
@@ -143,11 +146,11 @@ public class TodoService {
                     if (h.succeeded()){
                         todo.put("id", h.result().getKeys().getInteger(0));
                         result.handle(Future.succeededFuture(todo));
-                        sqlConnection.close();
                     }
                     else{
                         result.handle(Future.failedFuture(h.cause().getMessage()));
                     }
+                    sqlConnection.close();
                 });
             }
         });

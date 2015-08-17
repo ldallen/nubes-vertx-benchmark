@@ -17,18 +17,34 @@ public class Server extends AbstractVerticle {
     @Override
     public void start() throws Exception {
 
-        JsonObject config = new JsonObject()
+        JsonObject config = context.config();
+        JsonObject confJdbc;
+        HttpServerOptions options;
+
+        JsonObject defaultJdbcConf = new JsonObject()
                 .put("url", "jdbc:mysql://localhost:3306/vertxTodo")
                 .put("driver_class", "com.mysql.jdbc.Driver")
-                .put("user","root")
-                .put("password","root");
+                .put("user", "root")
+                .put("password", "root")
+                .put("initial_pool_size", 50)
+                .put("max_pool_size", 1000);
+        if (config == null) {
+            confJdbc = defaultJdbcConf;
+            options = new HttpServerOptions().setMaxWebsocketFrameSize(1000000).setPort(8090).setHost("localhost");
+
+        }
+        else {
+
+            confJdbc = config.getJsonObject("jdbc", defaultJdbcConf);
+
+            options = new HttpServerOptions().setMaxWebsocketFrameSize(1000000).setPort(8090).setHost(config.getString("host","localhost"));
+
+        }
 
 
-        jdbcClient = JDBCClient.createShared(vertx, config);
+        jdbcClient = JDBCClient.createShared(vertx, confJdbc);
 
         todoService = new TodoService(jdbcClient);
-
-        HttpServerOptions options = new HttpServerOptions().setMaxWebsocketFrameSize(1000000).setPort(8000).setHost("localhost");
         HttpServer server = vertx.createHttpServer(options);
 
         Router router = Router.router(vertx);
@@ -55,18 +71,18 @@ public class Server extends AbstractVerticle {
 
         });
 
-        router.get("/api/todo/view/:id").handler(context->{
+        router.get("/api/todo/view/:id").handler(context-> {
 
             String id = context.request().getParam("id");
             todoService.getSpecific("id", id, handler -> {
                 if (handler.succeeded()) {
-                    context.response().end(handler.result().getJsonObject(0).encodePrettily());
+                    context.response().end(handler.result().encodePrettily());
                 } else {
                     context.response().end(handler.cause().getMessage());
                 }
             });
-
         });
+
 
         router.get("/api/todo/done/:done").handler(context->{
 
@@ -118,11 +134,11 @@ public class Server extends AbstractVerticle {
 
             String id = context.request().getParam("id");
             context.request().bodyHandler(buff -> {
-                String done = buff.toString();
+                JsonObject done = new JsonObject(buff.toString());
                 if (done == null)
                     context.response().setStatusCode(400).end();
                 else {
-                    todoService.updateStatus(Integer.parseInt(id), Boolean.parseBoolean(done), handler -> {
+                    todoService.updateStatus(Integer.parseInt(id), done.getBoolean("done"), handler -> {
                         if (handler.succeeded()) {
                             context.response().end(handler.result());
                         } else {
@@ -132,21 +148,21 @@ public class Server extends AbstractVerticle {
                 }
             });
 
+        });
+
+        router.delete("/api/todo/:id").handler(context -> {
+
+            String id = context.request().getParam("id");
+            todoService.delete(Integer.parseInt(id), handler -> {
+                if (handler.succeeded()) {
+                    context.response().end(handler.result());
+                } else {
+                    context.response().end(handler.cause().getMessage());
+                }
             });
 
-            router.delete("/api/todo/:id").handler(context -> {
+        });
 
-                String id = context.request().getParam("id");
-                todoService.delete(Integer.parseInt(id), handler -> {
-                    if (handler.succeeded()) {
-                        context.response().end(handler.result());
-                    } else {
-                        context.response().end(handler.cause().getMessage());
-                    }
-                });
-
-            });
-
-            server.requestHandler(router::accept).listen(8000);
-        }
+        server.requestHandler(router::accept).listen(8090);
     }
+}
